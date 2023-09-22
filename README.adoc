@@ -1,0 +1,33 @@
+= Neo4j Dinosaur Guide
+
+Dinosaurs are cool, learn about Neo4j, graph databases and Dinosaurs with this guide.
+
+image::guide\images\big_dino.png[An illustration of a dinosaur using nodes and vertices]
+
+== Usage
+
+When using Neo4j Browser type this into the console:
+
+[source]
+----
+:guide http://localhost:8000/guide.html
+----
+
+== Build
+
+You can build the `guide\guide.adoc` document using link:https://github.com/neo4j-contrib/neo4j-guides[github.com/neo4j-contrib/neo4j-guides].
+
+[source]
+----
+./run.sh ../neo4j-dinosaur-guide/guide/guide.adoc ../neo4j-dinosaur-guide/guide/guide.html
+----
+
+[NOTE]
+The `IMAGE_URL` variable at the top of `guide/guide.adoc` should be updated to reflect the location of the images.
+
+You can host the guide locally using Python:
+
+[source]
+----
+python -m http.server
+----

@@ -1,0 +1,338 @@
+:IMAGE_URL: http://localhost:8000/images/
+
+= Dinosaurs
+
+== Introduction
+
+You are going to explore a graph database full of dinosaurs. 
+
+image::{IMAGE_URL}dino.png[An illustration of a dinosaur]
+
+You will learn about graphs and how to use Cypher to answer questions about the dinosaurs.
+
+* Which dinosaurs were the biggest?
+* What dinosaurs lived in the same region?
+* What dinosaurs existed in the same period?
+
+Next, you will import the dinosaur data and build the graph.
+
+== Dinosaur Data
+
+You are going to be exploring Dinosaur data stored in a graph. The graph is structured as follows:
+
+image::{IMAGE_URL}data_model.png[The data model for the dinosaur graph]
+
+The nodes represent dinosaurs, groups, periods and regions. The relationships reflect how the dinosaurs are related to the other nodes.
+
+For example, the `Diplodocus` is a *member of* the `sauropod` group, which *lived during* the `Late Jurassic` period and *lived in* the `USA` region.
+
+Run this Cypher to import the data into your database:
+
+[source,cypher]
+----
+MATCH (Dinosaur)-[r:MEMBER_OF]->(Group) DELETE r;
+MATCH (Dinosaur)-[r:LIVED_DURING]->(Period) DELETE r;
+MATCH (Dinosaur)-[r:LIVED_IN]->(Region) DELETE r;
+
+MATCH (g:Group) DELETE g;
+MATCH (p:Period) DELETE p;
+MATCH (r:Region) DELETE r;
+MATCH (d:Dinosaur) DELETE d;
+
+DROP CONSTRAINT Dinosaur_name IF EXISTS;
+DROP CONSTRAINT Group_name IF EXISTS;
+DROP CONSTRAINT Period_name IF EXISTS;
+DROP CONSTRAINT Region_name IF EXISTS;
+
+CREATE CONSTRAINT Dinosaur_name
+FOR (x:Dinosaur)
+REQUIRE x.name IS UNIQUE;
+
+CREATE CONSTRAINT Group_name
+FOR (x:Group)
+REQUIRE x.name IS UNIQUE;
+
+CREATE CONSTRAINT Period_name
+FOR (x:Period)
+REQUIRE x.name IS UNIQUE;
+
+CREATE CONSTRAINT Region_name
+FOR (x:Region)
+REQUIRE x.name IS UNIQUE;
+
+// Dinosaurs
+LOAD CSV WITH HEADERS
+FROM 'file:///dinosaurs.csv' AS row
+MERGE (d:Dinosaur{name:row.name})
+SET 
+d.diet = row.diet, 
+d.length = toFloat(row.length), 
+d.named_year = toInteger(row.named_year),
+d.link = row.link;
+
+// Groups
+LOAD CSV WITH HEADERS
+FROM 'file:///dinosaurs.csv' AS row
+MATCH (d:Dinosaur{name:row.name})
+MERGE (g:Group{name:row.type})
+MERGE (d)-[:MEMBER_OF]->(g);
+
+// Periods
+LOAD CSV WITH HEADERS
+FROM 'file:///dinosaurs.csv' AS row
+WITH row WHERE row.period IS NOT NULL
+MATCH (d:Dinosaur{name:row.name})
+MERGE (p:Period{name:row.period})
+MERGE (d)-[l:LIVED_DURING]->(p)
+SET l.from = toInteger(row.period_from), l.to = toInteger(row.period_to);
+
+// Regions
+LOAD CSV WITH HEADERS
+FROM 'file:///dinosaurs.csv' AS row
+WITH row WHERE row.lived_in IS NOT NULL
+MATCH (d:Dinosaur{name:row.name})
+MERGE (r:Region{name:row.lived_in})
+MERGE (d)-[:LIVED_IN]->(r);
+----
+
+Next, you will create Cypher to find nodes.
+
+== Finding Tyrannosaurus
+
+You are going to start by using Cypher to find the Tyrannosaurus.
+
+image::{IMAGE_URL}trex.png[An illustration of a Tyrannosaurus]
+
+Review the following Cypher statement and try to predict what will happen before you run it:
+
+[source,cypher]
+----
+MATCH (d:Dinosaur) 
+RETURN d LIMIT 25;
+----
+
+The Cypher statement returns the first 25 `Dinosaur` nodes.
+
+image::{IMAGE_URL}dinosaur_nodes.png[The result of the Cypher statement as a graph of Dinosaur nodes]
+
+Click on a node to see the properties. `Dinosaur` nodes have properties such as `name`, `diet`, `length` and `named_year`.
+
+You can click on the `link` property to learn about the dinosaur.
+
+You can filter the nodes using the properties. 
+
+To find the `Tyrannosaurus` node, you can use the `name` property:
+
+[source,cypher]
+----
+MATCH (d:Dinosaur {name: 'Tyrannosaurus'}) 
+RETURN d;
+----
+
+Can you modify this query to:
+
+* Find the `Velociraptor`?
+* Find the dinosaurs with a `herbivorous` `diet`?
+
+Next, you will use the WHERE clause to filter the data returned.
+
+== Finding the longest dinosaurs
+
+As well as filtering nodes, when you `MATCH` them, you can apply a `WHERE` clause to filter the results.
+
+This query returns the same result as the previous query to find the 'Tyrannosaurus':
+
+[source,cypher]
+----
+MATCH (d:Dinosaur)
+WHERE d.name = 'Tyrannosaurus'
+RETURN d;
+----
+
+Using the `WHERE` clause, you can use comparison operators such as less than (`<`) and greater than (`>`). 
+
+For example, filtering dinosaurs by their length:
+
+[source,cypher]
+----
+MATCH (d:Dinosaur)
+WHERE d.length < 5
+RETURN d;
+----
+
+Can you modify this query to return the dinosaurs who are longer than 20 metres?
+
+Next, you will explore relationships in the graph.
+
+== Exploring Dinosaurs 
+
+You can explore the graph to discover how the 'Tyrannosaurus' was related to other dinosaurs.
+
+Find the 'Tyrannosaurus' node:
+
+[source,cypher]
+----
+MATCH (d:Dinosaur {name: 'Tyrannosaurus'}) 
+RETURN d;
+----
+
+Select the node and click the *graph* button to see the relationships.
+
+image::{IMAGE_URL}node_options.png[The node options menu]
+
+The graph will expand to show the relationships to the other nodes.
+
+You can see that the 'Tyrannosaurus' is a member of the 'large theropod' group, lived during the 'Late Cretaceous' period and lived in the 'United States' region.
+
+image::{IMAGE_URL}trex_relationships.png[The graph of the Tyrannosaurus node]
+
+Expanding the graph further, you can see how the 'Tyrannosaurus' relates to other dinosaurs.
+
+For example, what other Dinosaurs are from the 'Late Cretaceous' period:
+
+image::{IMAGE_URL}late_cret_dinosaurs.png[The graph of the Late Cretaceous period]
+
+Explore the relationships to find more relationships between dinosaurs.
+
+Next, you will create Cypher to explore relationships.
+
+== Where did Dinosaurs live?
+
+You can use Cypher and relationships to find the dinosaurs that lived in the 'USA'.
+
+image::{IMAGE_URL}usa.png[An illustration of the USA]
+
+Start by finding the 'USA' region node:
+
+[source,cypher]
+----
+MATCH (r:Region {name: 'USA'})
+RETURN r;
+----
+
+You can use the `LIVED_IN` relationship to find the `Dinosaur` nodes that have a relationship to the `USA` region:
+
+[source,cypher]
+----
+MATCH (r:Region {name: 'USA'})<-[l:LIVED_IN]-(d:Dinosaur)
+RETURN r,d
+----
+
+Review the query and identify:
+
+. Where the query uses the `LIVED_IN` relationship to find the `Dinosaur` nodes
+. How the variables `r` and `d` refer to the `Region` and `Dinosaur` nodes
+. How the `<` symbol specifies the direction of the relationship from the `Dinosaur` to the `Region`
+
+Can you modify the query to find the dinosaurs that lived in a different legion?
+
+You can get a list of all the regions by running this query:
+
+[source,cypher]
+----
+MATCH (r:Region) RETURN r.name;
+----
+
+Next, you will use the `LIVED_DURING` relationship to find dinosaurs that lived in the same period.
+
+== When did Dinosaurs live?
+
+You can use the `LIVED_DURING` relationship to find all the dinosaurs that lived during the 'Late Cretaceous' period.
+
+image::{IMAGE_URL}dinosaurs.png[An illustration of two dinosaurs]
+
+In the previous step, you used the `LIVED_IN` relationship to find the dinosaurs that lived in the 'USA' region:
+
+[source,cypher]
+----
+MATCH (r:Region {name: 'USA'})<-[l:LIVED_IN]-(d:Dinosaur)
+RETURN r,d
+----
+
+Can you modify this query to: 
+
+* Match `Period` nodes where the name equals 'Late Cretaceous'
+* Use the `LIVED_DURING` relationship to find the `Dinosaur` nodes
+
+Next, you will see the solution to this problem and modify it to return data about the dinosaurs'.
+
+== Dinosaur data
+
+You may not want to return the graph of nodes and relationships. You can return data about the dinosaurs instead.
+
+Previously, your challenge was to create this query to return the dinosaurs that lived in the 'Late Cretaceous' period:
+
+[source,cypher]
+----
+MATCH (p:Period {name: 'Late Cretaceous'})<-[:LIVED_DURING]-(d:Dinosaur)
+RETURN p,d
+----
+
+To return data about the dinosaurs, you can specify the properties to return.
+
+Review this query before you run it and predict what data it will return:
+
+[source,cypher]
+----
+MATCH (p:Period {name: 'Late Cretaceous'})<-[:LIVED_DURING]-(d:Dinosaur)
+RETURN d.name, d.length, p.name
+----
+
+You should see a table of data. The columns are the properties you specified in the `RETURN` clause.
+
+Next, you will use relationship properties to calculate how long dinosaurs lived.
+
+== How long did Dinosaurs live?
+
+Like nodes, relationships can also have properties. In the graph of dinosaurs, the `LIVED_DURING` relationship has `from` and `to` properties.
+
+[NOTE]
+The `from` and `to` properties are millions of years before link:https://en.wikipedia.org/wiki/Common_Era[BCE].
+
+You can view the properties of a relationship by clicking on it.
+
+This query will return the `from` and `to` values for all the dinosaurs.
+
+[source,cypher]
+----
+MATCH (d:Dinosaur)-[l:LIVED_DURING]->(p:Period)
+RETURN d.name, p.name, l.from, l.to
+----
+
+Subtract the `to` and `from` values to calculate how long the dinosaurs lived.
+
+[source, cypher]
+----
+MATCH (d:Dinosaur)-[l:LIVED_DURING]->(p:Period)
+RETURN d.name, p.name, l.from - l.to as millions_of_years
+----
+
+You can also order the results to get the dinosaurs that lived the longest:
+
+[source, cypher]
+----
+MATCH (d:Dinosaur)-[l:LIVED_DURING]->(p:Period)
+RETURN d.name, p.name, l.from - l.to as millions_of_years
+ORDER BY millions_of_years DESC
+----
+
+Next, there is a challenge for you to complete.
+
+== Challenge
+
+Dinosaurs are classified into groups. For example, the `Tyrannosaurus` is a member of the `large theropod` group.
+
+The graph includes `Group` nodes and `MEMBER_OF` relationships to link the `Dinosaur` nodes to the `Group` nodes.
+
+image::{IMAGE_URL}data_model.png[The data model for the dinosaur graph]
+
+Can you create a Cypher query to find the dinosaurs in the same group as the 'Brachiosaurus'.
+
+Congratulations, you have learnt: 
+
+* How you can store data in a graph
+* That graphs are structured as nodes, relationships and properties
+* How to use Cypher to query a graph
+* That dinosaurs are awesome!
+
+image::{IMAGE_URL}trophy.png[A trophy]

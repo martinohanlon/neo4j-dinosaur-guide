@@ -1,0 +1,618 @@
+<style type="text/css" media="screen">
+/*
+.nodes-image {
+	margin:-100;
+}
+*/	
+@import url("//maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css");
+
+.imageblock .content img, .image img {max-width: 900px;max-height: 300px;}
+.deck h3, .deck h4 {display: block !important;margin-bottom:8px;margin-top:5px;}
+.listingblock {margin:8px;}
+.pull-bottom {position:relative;bottom:1em;}
+.admonitionblock td.icon [class^="fa icon-"]{font-size:2.5em;text-shadow:1px 1px 2px rgba(0,0,0,.5);cursor:default}
+.admonitionblock td.icon .icon-note:before{content:"\f05a";color:#19407c}
+.admonitionblock td.icon .icon-tip:before{content:"\f0eb";text-shadow:1px 1px 2px rgba(155,155,0,.8);color:#111}
+.admonitionblock td.icon .icon-warning:before{content:"\f071";color:#bf6900}
+.admonitionblock td.icon .icon-caution:before{content:"\f06d";color:#bf3400}
+.admonitionblock td.icon .icon-important:before{content:"\f06a";color:#bf0000}
+.admonitionblock.note.speaker { display:none; }
+</style>
+<style type="text/css" media="screen">
+/* #editor.maximize-editor .CodeMirror-code { font-size:24px; line-height:26px; } */
+</style>
+<article class="guide" ng-controller="AdLibDataController">
+  <carousel class="deck container-fluid">
+    <!--slide class="row-fluid">
+      <div class="col-sm-3">
+        <h3>Dinosaurs</h3>
+        <p class="lead">Information</p>
+			<!dl>
+				
+				
+				
+				
+				
+			</dl>
+		</div>
+      <div class="col-sm-9">
+        <figure>
+          <img style="width:300px" src=""/>
+        </figure>
+      </div>
+    </slide-->
+    
+
+
+   <h4>Dinosaurs</h4>
+   
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Introduction</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>You are going to explore a graph database full of dinosaurs.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://localhost:8000/images/dino.png" alt="An illustration of a dinosaur">
+</div>
+</div>
+<div class="paragraph">
+<p>You will learn about graphs and how to use Cypher to answer questions about the dinosaurs.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Which dinosaurs were the biggest?</p>
+</li>
+<li>
+<p>What dinosaurs lived in the same region?</p>
+</li>
+<li>
+<p>What dinosaurs existed in the same period?</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Next, you will import the dinosaur data and build the graph.</p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Dinosaur Data</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>You are going to be exploring Dinosaur data stored in a graph. The graph is structured as follows:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://localhost:8000/images/data_model.png" alt="The data model for the dinosaur graph">
+</div>
+</div>
+<div class="paragraph">
+<p>The nodes represent dinosaurs, groups, periods and regions. The relationships reflect how the dinosaurs are related to the other nodes.</p>
+</div>
+<div class="paragraph">
+<p>For example, the <code>Diplodocus</code> is a <strong>member of</strong> the <code>sauropod</code> group, which <strong>lived during</strong> the <code>Late Jurassic</code> period and <strong>lived in</strong> the <code>USA</code> region.</p>
+</div>
+<div class="paragraph">
+<p>Run this Cypher to import the data into your database:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (Dinosaur)-[r:MEMBER_OF]-&gt;(Group) DELETE r;
+MATCH (Dinosaur)-[r:LIVED_DURING]-&gt;(Period) DELETE r;
+MATCH (Dinosaur)-[r:LIVED_IN]-&gt;(Region) DELETE r;
+
+MATCH (g:Group) DELETE g;
+MATCH (p:Period) DELETE p;
+MATCH (r:Region) DELETE r;
+MATCH (d:Dinosaur) DELETE d;
+
+DROP CONSTRAINT Dinosaur_name IF EXISTS;
+DROP CONSTRAINT Group_name IF EXISTS;
+DROP CONSTRAINT Period_name IF EXISTS;
+DROP CONSTRAINT Region_name IF EXISTS;
+
+CREATE CONSTRAINT Dinosaur_name
+FOR (x:Dinosaur)
+REQUIRE x.name IS UNIQUE;
+
+CREATE CONSTRAINT Group_name
+FOR (x:Group)
+REQUIRE x.name IS UNIQUE;
+
+CREATE CONSTRAINT Period_name
+FOR (x:Period)
+REQUIRE x.name IS UNIQUE;
+
+CREATE CONSTRAINT Region_name
+FOR (x:Region)
+REQUIRE x.name IS UNIQUE;
+
+// Dinosaurs
+LOAD CSV WITH HEADERS
+FROM 'file:///dinosaurs.csv' AS row
+MERGE (d:Dinosaur{name:row.name})
+SET
+d.diet = row.diet,
+d.length = toFloat(row.length),
+d.named_year = toInteger(row.named_year),
+d.link = row.link;
+
+// Groups
+LOAD CSV WITH HEADERS
+FROM 'file:///dinosaurs.csv' AS row
+MATCH (d:Dinosaur{name:row.name})
+MERGE (g:Group{name:row.type})
+MERGE (d)-[:MEMBER_OF]-&gt;(g);
+
+// Periods
+LOAD CSV WITH HEADERS
+FROM 'file:///dinosaurs.csv' AS row
+WITH row WHERE row.period IS NOT NULL
+MATCH (d:Dinosaur{name:row.name})
+MERGE (p:Period{name:row.period})
+MERGE (d)-[l:LIVED_DURING]-&gt;(p)
+SET l.from = toInteger(row.period_from), l.to = toInteger(row.period_to);
+
+// Regions
+LOAD CSV WITH HEADERS
+FROM 'file:///dinosaurs.csv' AS row
+WITH row WHERE row.lived_in IS NOT NULL
+MATCH (d:Dinosaur{name:row.name})
+MERGE (r:Region{name:row.lived_in})
+MERGE (d)-[:LIVED_IN]-&gt;(r);<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Next, you will create Cypher to find nodes.</p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Finding Tyrannosaurus</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>You are going to start by using Cypher to find the Tyrannosaurus.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://localhost:8000/images/trex.png" alt="An illustration of a Tyrannosaurus">
+</div>
+</div>
+<div class="paragraph">
+<p>Review the following Cypher statement and try to predict what will happen before you run it:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (d:Dinosaur)
+RETURN d LIMIT 25;<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The Cypher statement returns the first 25 <code>Dinosaur</code> nodes.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://localhost:8000/images/dinosaur_nodes.png" alt="The result of the Cypher statement as a graph of Dinosaur nodes">
+</div>
+</div>
+<div class="paragraph">
+<p>Click on a node to see the properties. <code>Dinosaur</code> nodes have properties such as <code>name</code>, <code>diet</code>, <code>length</code> and <code>named_year</code>.</p>
+</div>
+<div class="paragraph">
+<p>You can click on the <code>link</code> property to learn about the dinosaur.</p>
+</div>
+<div class="paragraph">
+<p>You can filter the nodes using the properties.</p>
+</div>
+<div class="paragraph">
+<p>To find the <code>Tyrannosaurus</code> node, you can use the <code>name</code> property:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (d:Dinosaur {name: 'Tyrannosaurus'})
+RETURN d;<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Can you modify this query to:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Find the <code>Velociraptor</code>?</p>
+</li>
+<li>
+<p>Find the dinosaurs with a <code>herbivorous</code> <code>diet</code>?</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Next, you will use the WHERE clause to filter the data returned.</p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Finding the longest dinosaurs</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>As well as filtering nodes, when you <code>MATCH</code> them, you can apply a <code>WHERE</code> clause to filter the results.</p>
+</div>
+<div class="paragraph">
+<p>This query returns the same result as the previous query to find the 'Tyrannosaurus':</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (d:Dinosaur)
+WHERE d.name = 'Tyrannosaurus'
+RETURN d;<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Using the <code>WHERE</code> clause, you can use comparison operators such as less than (<code>&lt;</code>) and greater than (<code>&gt;</code>).</p>
+</div>
+<div class="paragraph">
+<p>For example, filtering dinosaurs by their length:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (d:Dinosaur)
+WHERE d.length &lt; 5
+RETURN d;<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Can you modify this query to return the dinosaurs who are longer than 20 metres?</p>
+</div>
+<div class="paragraph">
+<p>Next, you will explore relationships in the graph.</p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Exploring Dinosaurs</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>You can explore the graph to discover how the 'Tyrannosaurus' was related to other dinosaurs.</p>
+</div>
+<div class="paragraph">
+<p>Find the 'Tyrannosaurus' node:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (d:Dinosaur {name: 'Tyrannosaurus'})
+RETURN d;<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Select the node and click the <strong>graph</strong> button to see the relationships.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://localhost:8000/images/node_options.png" alt="The node options menu">
+</div>
+</div>
+<div class="paragraph">
+<p>The graph will expand to show the relationships to the other nodes.</p>
+</div>
+<div class="paragraph">
+<p>You can see that the 'Tyrannosaurus' is a member of the 'large theropod' group, lived during the 'Late Cretaceous' period and lived in the 'United States' region.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://localhost:8000/images/trex_relationships.png" alt="The graph of the Tyrannosaurus node">
+</div>
+</div>
+<div class="paragraph">
+<p>Expanding the graph further, you can see how the 'Tyrannosaurus' relates to other dinosaurs.</p>
+</div>
+<div class="paragraph">
+<p>For example, what other Dinosaurs are from the 'Late Cretaceous' period:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://localhost:8000/images/late_cret_dinosaurs.png" alt="The graph of the Late Cretaceous period">
+</div>
+</div>
+<div class="paragraph">
+<p>Explore the relationships to find more relationships between dinosaurs.</p>
+</div>
+<div class="paragraph">
+<p>Next, you will create Cypher to explore relationships.</p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Where did Dinosaurs live?</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>You can use Cypher and relationships to find the dinosaurs that lived in the 'USA'.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://localhost:8000/images/usa.png" alt="An illustration of the USA">
+</div>
+</div>
+<div class="paragraph">
+<p>Start by finding the 'USA' region node:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (r:Region {name: 'USA'})
+RETURN r;<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can use the <code>LIVED_IN</code> relationship to find the <code>Dinosaur</code> nodes that have a relationship to the <code>USA</code> region:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (r:Region {name: 'USA'})&lt;-[l:LIVED_IN]-(d:Dinosaur)
+RETURN r,d<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Review the query and identify:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Where the query uses the <code>LIVED_IN</code> relationship to find the <code>Dinosaur</code> nodes</p>
+</li>
+<li>
+<p>How the variables <code>r</code> and <code>d</code> refer to the <code>Region</code> and <code>Dinosaur</code> nodes</p>
+</li>
+<li>
+<p>How the <code>&lt;</code> symbol specifies the direction of the relationship from the <code>Dinosaur</code> to the <code>Region</code></p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Can you modify the query to find the dinosaurs that lived in a different legion?</p>
+</div>
+<div class="paragraph">
+<p>You can get a list of all the regions by running this query:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (r:Region) RETURN r.name;<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Next, you will use the <code>LIVED_DURING</code> relationship to find dinosaurs that lived in the same period.</p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>When did Dinosaurs live?</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>You can use the <code>LIVED_DURING</code> relationship to find all the dinosaurs that lived during the 'Late Cretaceous' period.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://localhost:8000/images/dinosaurs.png" alt="An illustration of two dinosaurs">
+</div>
+</div>
+<div class="paragraph">
+<p>In the previous step, you used the <code>LIVED_IN</code> relationship to find the dinosaurs that lived in the 'USA' region:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (r:Region {name: 'USA'})&lt;-[l:LIVED_IN]-(d:Dinosaur)
+RETURN r,d<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Can you modify this query to:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Match <code>Period</code> nodes where the name equals 'Late Cretaceous'</p>
+</li>
+<li>
+<p>Use the <code>LIVED_DURING</code> relationship to find the <code>Dinosaur</code> nodes</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Next, you will see the solution to this problem and modify it to return data about the dinosaurs'.</p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Dinosaur data</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>You may not want to return the graph of nodes and relationships. You can return data about the dinosaurs instead.</p>
+</div>
+<div class="paragraph">
+<p>Previously, your challenge was to create this query to return the dinosaurs that lived in the 'Late Cretaceous' period:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (p:Period {name: 'Late Cretaceous'})&lt;-[:LIVED_DURING]-(d:Dinosaur)
+RETURN p,d<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To return data about the dinosaurs, you can specify the properties to return.</p>
+</div>
+<div class="paragraph">
+<p>Review this query before you run it and predict what data it will return:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (p:Period {name: 'Late Cretaceous'})&lt;-[:LIVED_DURING]-(d:Dinosaur)
+RETURN d.name, d.length, p.name<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You should see a table of data. The columns are the properties you specified in the <code>RETURN</code> clause.</p>
+</div>
+<div class="paragraph">
+<p>Next, you will use relationship properties to calculate how long dinosaurs lived.</p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>How long did Dinosaurs live?</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Like nodes, relationships can also have properties. In the graph of dinosaurs, the <code>LIVED_DURING</code> relationship has <code>from</code> and <code>to</code> properties.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title=""></i>
+</td>
+<td class="content">
+The <code>from</code> and <code>to</code> properties are millions of years before <a href="https://en.wikipedia.org/wiki/Common_Era">BCE</a>.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>You can view the properties of a relationship by clicking on it.</p>
+</div>
+<div class="paragraph">
+<p>This query will return the <code>from</code> and <code>to</code> values for all the dinosaurs.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (d:Dinosaur)-[l:LIVED_DURING]-&gt;(p:Period)
+RETURN d.name, p.name, l.from, l.to<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Subtract the <code>to</code> and <code>from</code> values to calculate how long the dinosaurs lived.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (d:Dinosaur)-[l:LIVED_DURING]-&gt;(p:Period)
+RETURN d.name, p.name, l.from - l.to as millions_of_years<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can also order the results to get the dinosaurs that lived the longest:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (d:Dinosaur)-[l:LIVED_DURING]-&gt;(p:Period)
+RETURN d.name, p.name, l.from - l.to as millions_of_years
+ORDER BY millions_of_years DESC<!--/code--></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Next, there is a challenge for you to complete.</p>
+</div>
+	</div>
+  </div>
+</slide>
+
+
+
+<slide class="row-fluid">
+  <div class="col-sm-12">
+    <h3>Challenge</h3>
+    <br/>
+    <div>
+      <div class="paragraph">
+<p>Dinosaurs are classified into groups. For example, the <code>Tyrannosaurus</code> is a member of the <code>large theropod</code> group.</p>
+</div>
+<div class="paragraph">
+<p>The graph includes <code>Group</code> nodes and <code>MEMBER_OF</code> relationships to link the <code>Dinosaur</code> nodes to the <code>Group</code> nodes.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://localhost:8000/images/data_model.png" alt="The data model for the dinosaur graph">
+</div>
+</div>
+<div class="paragraph">
+<p>Can you create a Cypher query to find the dinosaurs in the same group as the 'Brachiosaurus'.</p>
+</div>
+<div class="paragraph">
+<p>Congratulations, you have learnt:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>How you can store data in a graph</p>
+</li>
+<li>
+<p>That graphs are structured as nodes, relationships and properties</p>
+</li>
+<li>
+<p>How to use Cypher to query a graph</p>
+</li>
+<li>
+<p>That dinosaurs are awesome!</p>
+</li>
+</ul>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="http://localhost:8000/images/trophy.png" alt="A trophy">
+</div>
+</div>
+	</div>
+  </div>
+</slide>
+  </carousel>
+</article>
