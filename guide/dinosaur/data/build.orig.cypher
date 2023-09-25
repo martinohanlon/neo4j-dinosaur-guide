@@ -1,23 +1,30 @@
-// Delete all nodes and relationships
-MATCH (d:Dinosaur) DETACH DELETE d;
+MATCH (Dinosaur)-[r:MEMBER_OF]->(Group) DELETE r;
+MATCH (Dinosaur)-[r:LIVED_DURING]->(Period) DELETE r;
+MATCH (Dinosaur)-[r:LIVED_IN]->(Region) DELETE r;
+
 MATCH (g:Group) DELETE g;
 MATCH (p:Period) DELETE p;
 MATCH (r:Region) DELETE r;
+MATCH (d:Dinosaur) DELETE d;
 
-// Create constraints
-CREATE CONSTRAINT Dinosaur_name IF NOT EXISTS
+DROP CONSTRAINT Dinosaur_name IF EXISTS;
+DROP CONSTRAINT Group_name IF EXISTS;
+DROP CONSTRAINT Period_name IF EXISTS;
+DROP CONSTRAINT Region_name IF EXISTS;
+
+CREATE CONSTRAINT Dinosaur_name
 FOR (x:Dinosaur)
 REQUIRE x.name IS UNIQUE;
 
-CREATE CONSTRAINT Group_name IF NOT EXISTS
+CREATE CONSTRAINT Group_name
 FOR (x:Group)
 REQUIRE x.name IS UNIQUE;
 
-CREATE CONSTRAINT Period_name IF NOT EXISTS
+CREATE CONSTRAINT Period_name
 FOR (x:Period)
 REQUIRE x.name IS UNIQUE;
 
-CREATE CONSTRAINT Region_name IF NOT EXISTS
+CREATE CONSTRAINT Region_name
 FOR (x:Region)
 REQUIRE x.name IS UNIQUE;
 

@@ -110,33 +110,26 @@
 </div>
 <div class="listingblock">
 <div class="content">
-<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->MATCH (Dinosaur)-[r:MEMBER_OF]-&gt;(Group) DELETE r;
-MATCH (Dinosaur)-[r:LIVED_DURING]-&gt;(Period) DELETE r;
-MATCH (Dinosaur)-[r:LIVED_IN]-&gt;(Region) DELETE r;
-
+<pre mode="cypher"  class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding" data-lang="cypher" lang="cypher"><!--code class="cypher language-cypher"-->// Delete all nodes and relationships
+MATCH (d:Dinosaur) DETACH DELETE d;
 MATCH (g:Group) DELETE g;
 MATCH (p:Period) DELETE p;
 MATCH (r:Region) DELETE r;
-MATCH (d:Dinosaur) DELETE d;
 
-DROP CONSTRAINT Dinosaur_name IF EXISTS;
-DROP CONSTRAINT Group_name IF EXISTS;
-DROP CONSTRAINT Period_name IF EXISTS;
-DROP CONSTRAINT Region_name IF EXISTS;
-
-CREATE CONSTRAINT Dinosaur_name
+// Create constraints
+CREATE CONSTRAINT Dinosaur_name IF NOT EXISTS
 FOR (x:Dinosaur)
 REQUIRE x.name IS UNIQUE;
 
-CREATE CONSTRAINT Group_name
+CREATE CONSTRAINT Group_name IF NOT EXISTS
 FOR (x:Group)
 REQUIRE x.name IS UNIQUE;
 
-CREATE CONSTRAINT Period_name
+CREATE CONSTRAINT Period_name IF NOT EXISTS
 FOR (x:Period)
 REQUIRE x.name IS UNIQUE;
 
-CREATE CONSTRAINT Region_name
+CREATE CONSTRAINT Region_name IF NOT EXISTS
 FOR (x:Region)
 REQUIRE x.name IS UNIQUE;
 
@@ -174,6 +167,9 @@ MATCH (d:Dinosaur{name:row.name})
 MERGE (r:Region{name:row.lived_in})
 MERGE (d)-[:LIVED_IN]-&gt;(r);<!--/code--></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>There are 309 different dinosaurs in the graph. 927 relationship connect the dinosaurs to 7 groups, 6 periods in time and 32 regions.</p>
 </div>
 <div class="paragraph">
 <p>Next, you will create Cypher to find nodes.</p>
@@ -315,15 +311,7 @@ RETURN d;<!--/code--></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Select the node and click the <strong>graph</strong> button to see the relationships.</p>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="https://guides.neo4j.com/dinosaur/images/node_options.png" alt="The node options menu">
-</div>
-</div>
-<div class="paragraph">
-<p>The graph will expand to show the relationships to the other nodes.</p>
+<p>Double click on the node to show the relationships to the other nodes.</p>
 </div>
 <div class="paragraph">
 <p>You can see that the 'Tyrannosaurus' is a member of the 'large theropod' group, lived during the 'Late Cretaceous' period and lived in the 'United States' region.</p>
@@ -404,7 +392,7 @@ RETURN r,d<!--/code--></pre>
 </ol>
 </div>
 <div class="paragraph">
-<p>Can you modify the query to find the dinosaurs that lived in a different legion?</p>
+<p>Can you modify the query to find the dinosaurs that lived in a different region?</p>
 </div>
 <div class="paragraph">
 <p>You can get a list of all the regions by running this query:</p>
