@@ -10,7 +10,7 @@ When using Neo4j Browser type this into the console:
 
 [source]
 ----
-:guide http://localhost:8000/guide.html
+:guide https://guides.neo4j.com/dino
 ----
 
 == Build
@@ -19,11 +19,11 @@ You can build the `guide\guide.adoc` document using link:https://github.com/neo4
 
 [source]
 ----
-./run.sh ../neo4j-dinosaur-guide/guide/guide.adoc ../neo4j-dinosaur-guide/guide/guide.html
+./run.sh ../neo4j-dinosaur-guide/guide/dino.adoc ../neo4j-dinosaur-guide/guide/dino
 ----
 
 [NOTE]
-The `IMAGE_URL` variable at the top of `guide/guide.adoc` should be updated to reflect the location of the images.
+The `IMAGE_URL` variable at the top of `guide/dino.adoc` should be updated to reflect the location of the images.
 
 You can host the guide locally using Python:
 

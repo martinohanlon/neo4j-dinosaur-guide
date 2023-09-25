@@ -54,11 +54,11 @@
     <br/>
     <div>
       <div class="paragraph">
-<p>You are going to explore a graph database full of dinosaurs.</p>
+<p>You are going to explore a graph database of dinosaurs.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="http://localhost:8000/images/dino.png" alt="An illustration of a dinosaur">
+<img src="https://guides.neo4j.com/dinosaur/images/dino.png" alt="An illustration of a dinosaur">
 </div>
 </div>
 <div class="paragraph">
@@ -96,7 +96,7 @@
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="http://localhost:8000/images/data_model.png" alt="The data model for the dinosaur graph">
+<img src="https://guides.neo4j.com/dinosaur/images/data_model.png" alt="The data model for the dinosaur graph">
 </div>
 </div>
 <div class="paragraph">
@@ -142,24 +142,24 @@ REQUIRE x.name IS UNIQUE;
 
 // Dinosaurs
 LOAD CSV WITH HEADERS
-FROM 'file:///dinosaurs.csv' AS row
+FROM 'https://guides.neo4j.com/dinosaur/data/dinosaurs.csv' AS row
 MERGE (d:Dinosaur{name:row.name})
-SET
-d.diet = row.diet,
-d.length = toFloat(row.length),
+SET 
+d.diet = row.diet, 
+d.length = toFloat(row.length), 
 d.named_year = toInteger(row.named_year),
 d.link = row.link;
 
 // Groups
 LOAD CSV WITH HEADERS
-FROM 'file:///dinosaurs.csv' AS row
+FROM 'https://guides.neo4j.com/dinosaur/data/dinosaurs.csv' AS row
 MATCH (d:Dinosaur{name:row.name})
 MERGE (g:Group{name:row.type})
 MERGE (d)-[:MEMBER_OF]-&gt;(g);
 
 // Periods
 LOAD CSV WITH HEADERS
-FROM 'file:///dinosaurs.csv' AS row
+FROM 'https://guides.neo4j.com/dinosaur/data/dinosaurs.csv' AS row
 WITH row WHERE row.period IS NOT NULL
 MATCH (d:Dinosaur{name:row.name})
 MERGE (p:Period{name:row.period})
@@ -168,7 +168,7 @@ SET l.from = toInteger(row.period_from), l.to = toInteger(row.period_to);
 
 // Regions
 LOAD CSV WITH HEADERS
-FROM 'file:///dinosaurs.csv' AS row
+FROM 'https://guides.neo4j.com/dinosaur/data/dinosaurs.csv' AS row
 WITH row WHERE row.lived_in IS NOT NULL
 MATCH (d:Dinosaur{name:row.name})
 MERGE (r:Region{name:row.lived_in})
@@ -194,7 +194,7 @@ MERGE (d)-[:LIVED_IN]-&gt;(r);<!--/code--></pre>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="http://localhost:8000/images/trex.png" alt="An illustration of a Tyrannosaurus">
+<img src="https://guides.neo4j.com/dinosaur/images/trex.png" alt="An illustration of a Tyrannosaurus">
 </div>
 </div>
 <div class="paragraph">
@@ -211,7 +211,7 @@ RETURN d LIMIT 25;<!--/code--></pre>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="http://localhost:8000/images/dinosaur_nodes.png" alt="The result of the Cypher statement as a graph of Dinosaur nodes">
+<img src="https://guides.neo4j.com/dinosaur/images/dinosaur_nodes.png" alt="The result of the Cypher statement as a graph of Dinosaur nodes">
 </div>
 </div>
 <div class="paragraph">
@@ -319,7 +319,7 @@ RETURN d;<!--/code--></pre>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="http://localhost:8000/images/node_options.png" alt="The node options menu">
+<img src="https://guides.neo4j.com/dinosaur/images/node_options.png" alt="The node options menu">
 </div>
 </div>
 <div class="paragraph">
@@ -330,7 +330,7 @@ RETURN d;<!--/code--></pre>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="http://localhost:8000/images/trex_relationships.png" alt="The graph of the Tyrannosaurus node">
+<img src="https://guides.neo4j.com/dinosaur/images/trex_relationships.png" alt="The graph of the Tyrannosaurus node">
 </div>
 </div>
 <div class="paragraph">
@@ -341,7 +341,7 @@ RETURN d;<!--/code--></pre>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="http://localhost:8000/images/late_cret_dinosaurs.png" alt="The graph of the Late Cretaceous period">
+<img src="https://guides.neo4j.com/dinosaur/images/late_cret_dinosaurs.png" alt="The graph of the Late Cretaceous period">
 </div>
 </div>
 <div class="paragraph">
@@ -366,7 +366,7 @@ RETURN d;<!--/code--></pre>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="http://localhost:8000/images/usa.png" alt="An illustration of the USA">
+<img src="https://guides.neo4j.com/dinosaur/images/usa.png" alt="An illustration of the USA">
 </div>
 </div>
 <div class="paragraph">
@@ -433,7 +433,7 @@ RETURN r,d<!--/code--></pre>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="http://localhost:8000/images/dinosaurs.png" alt="An illustration of two dinosaurs">
+<img src="https://guides.neo4j.com/dinosaur/images/dinosaurs.png" alt="An illustration of two dinosaurs">
 </div>
 </div>
 <div class="paragraph">
@@ -581,7 +581,7 @@ ORDER BY millions_of_years DESC<!--/code--></pre>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="http://localhost:8000/images/data_model.png" alt="The data model for the dinosaur graph">
+<img src="https://guides.neo4j.com/dinosaur/images/data_model.png" alt="The data model for the dinosaur graph">
 </div>
 </div>
 <div class="paragraph">
@@ -608,7 +608,7 @@ ORDER BY millions_of_years DESC<!--/code--></pre>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="http://localhost:8000/images/trophy.png" alt="A trophy">
+<img src="https://guides.neo4j.com/dinosaur/images/trophy.png" alt="A trophy">
 </div>
 </div>
 	</div>

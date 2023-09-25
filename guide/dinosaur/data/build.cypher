@@ -30,7 +30,7 @@ REQUIRE x.name IS UNIQUE;
 
 // Dinosaurs
 LOAD CSV WITH HEADERS
-FROM 'file:///dinosaurs.csv' AS row
+FROM 'https://guides.neo4j.com/dinosaur/data/dinosaurs.csv' AS row
 MERGE (d:Dinosaur{name:row.name})
 SET 
 d.diet = row.diet, 
@@ -40,14 +40,14 @@ d.link = row.link;
 
 // Groups
 LOAD CSV WITH HEADERS
-FROM 'file:///dinosaurs.csv' AS row
+FROM 'https://guides.neo4j.com/dinosaur/data/dinosaurs.csv' AS row
 MATCH (d:Dinosaur{name:row.name})
 MERGE (g:Group{name:row.type})
 MERGE (d)-[:MEMBER_OF]->(g);
 
 // Periods
 LOAD CSV WITH HEADERS
-FROM 'file:///dinosaurs.csv' AS row
+FROM 'https://guides.neo4j.com/dinosaur/data/dinosaurs.csv' AS row
 WITH row WHERE row.period IS NOT NULL
 MATCH (d:Dinosaur{name:row.name})
 MERGE (p:Period{name:row.period})
@@ -56,7 +56,7 @@ SET l.from = toInteger(row.period_from), l.to = toInteger(row.period_to);
 
 // Regions
 LOAD CSV WITH HEADERS
-FROM 'file:///dinosaurs.csv' AS row
+FROM 'https://guides.neo4j.com/dinosaur/data/dinosaurs.csv' AS row
 WITH row WHERE row.lived_in IS NOT NULL
 MATCH (d:Dinosaur{name:row.name})
 MERGE (r:Region{name:row.lived_in})
