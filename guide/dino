@@ -211,7 +211,7 @@ RETURN d LIMIT 25;<!--/code--></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Click on a node to see the properties. <code>Dinosaur</code> nodes have properties such as <code>name</code>, <code>diet</code>, <code>length</code> and <code>named_year</code>.</p>
+<p><strong>Click on a node</strong> to see the properties. <code>Dinosaur</code> nodes have properties such as <code>name</code>, <code>diet</code>, <code>length</code> and <code>named_year</code>.</p>
 </div>
 <div class="paragraph">
 <p>You can click on the <code>link</code> property to learn about the dinosaur.</p>
@@ -311,10 +311,10 @@ RETURN d;<!--/code--></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Double click on the node to show the relationships to the other nodes.</p>
+<p><strong>Double-click the node</strong> to show the relationships to the other nodes.</p>
 </div>
 <div class="paragraph">
-<p>You can see that the 'Tyrannosaurus' is a member of the 'large theropod' group, lived during the 'Late Cretaceous' period and lived in the 'United States' region.</p>
+<p>You can see that the 'Tyrannosaurus' is a member of the 'large theropod' group, lived during the 'Late Cretaceous' period and lived in the 'USA' region.</p>
 </div>
 <div class="imageblock">
 <div class="content">
