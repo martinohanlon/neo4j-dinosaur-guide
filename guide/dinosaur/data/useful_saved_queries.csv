@@ -1,0 +1,35 @@
+name,description,query,id,parentId,isFolder
+Dinosaurs,,,0,,true
+1. Dinosaurs,,"MATCH (d:Dinosaur) 
+RETURN d
+LIMIT 100",1,0,false
+2. Information,,"MATCH 
+  (trex:Dinosaur {name: ""Tyrannosaurus""}),
+  (trex)-[ld:LIVED_DURING]->(when:Period),
+  (trex)-[li:LIVED_IN]->(where),
+  (trex)-[mo:MEMBER_OF]->(group)
+
+RETURN *
+
+// RETURN 
+// trex.name, trex.diet, trex.length, trex.named_year, trex.url,
+// when.name, ld.from, ld.to,
+// where.name,
+// group.name",2,0,false
+3. The same period,,"MATCH (where)<-[:LIVED_IN]-(trex:Dinosaur {name: ""Tyrannosaurus""})-[:LIVED_DURING]->(when:Period)
+
+MATCH (where)<-[li:LIVED_IN]-(dinos:Dinosaur)-[ld:LIVED_DURING]->(when)
+
+RETURN dinos, li, where, ld, when",3,0,false
+4. The same time,,"MATCH (where)<-[:LIVED_IN]-(trex:Dinosaur {name: ""Tyrannosaurus""})-[trex_ld:LIVED_DURING]->(when:Period)
+
+MATCH (where)<-[li:LIVED_IN]-(dinos:Dinosaur)-[ld:LIVED_DURING]->(when)
+WHERE 
+  trex_ld.from < ld.from and
+  trex_ld.to > ld.to
+
+RETURN trex, dinos, li, where, ld, when",4,0,false
+5. Years to Stegasaurus,,"MATCH (steg:Dinosaur {name: ""Stegosaurus""})-[steg_ld:LIVED_DURING]-()
+MATCH (dino:Dinosaur)-[ld:LIVED_DURING]-()
+RETURN dino.name, ld.from, ld.to, ld.to - steg_ld.from AS millionsYearsTillSteg, dino.link
+ORDER by millionsYearsTillSteg",5,0,false
